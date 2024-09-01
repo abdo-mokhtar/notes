@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:notes/add_note_cubit/add_note_cubit.dart';
-import 'package:notes/model/note_model.dart';
+import 'package:intl/intl.dart';
+import 'package:notes/models/note_model.dart';
 
+import '../../cubits/add_note_cubit/add_note_cubit.dart';
+import 'colors_list_view.dart';
 import 'custom_button.dart';
 import 'custom_text_field.dart';
 
 class AddNoteForm extends StatefulWidget {
   const AddNoteForm({
-    super.key,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<AddNoteForm> createState() => _AddNoteFormState();
@@ -17,7 +19,9 @@ class AddNoteForm extends StatefulWidget {
 
 class _AddNoteFormState extends State<AddNoteForm> {
   final GlobalKey<FormState> formKey = GlobalKey();
+
   AutovalidateMode autovalidateMode = AutovalidateMode.disabled;
+
   String? title, subTitle;
   @override
   Widget build(BuildContext context) {
@@ -27,7 +31,7 @@ class _AddNoteFormState extends State<AddNoteForm> {
       child: Column(
         children: [
           const SizedBox(
-            height: 30,
+            height: 32,
           ),
           CustomTextField(
             onSaved: (value) {
@@ -36,26 +40,37 @@ class _AddNoteFormState extends State<AddNoteForm> {
             hint: 'title',
           ),
           const SizedBox(
-            height: 20,
+            height: 16,
           ),
-          const CustomTextField(
-            hint: 'contant',
-            maxLines: 6,
+          CustomTextField(
+            onSaved: (value) {
+              subTitle = value;
+            },
+            hint: 'content',
+            maxLines: 5,
           ),
           const SizedBox(
-            height: 16,
+            height: 32,
+          ),
+          const ColorsListView(),
+          const SizedBox(
+            height: 32,
           ),
           BlocBuilder<AddNoteCubit, AddNoteState>(
             builder: (context, state) {
               return CustomButton(
                 isLoading: state is AddNoteLoading ? true : false,
-                ontap: () {
+                onTap: () {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
+                    var currentDate = DateTime.now();
+
+                    var formattedCurrentDate =
+                        DateFormat('dd-mm-yyyy').format(currentDate);
                     var noteModel = NoteModel(
-                        title: title ?? '',
-                        subTitle: subTitle ?? '',
-                        date: DateTime.now().toString(),
+                        title: title!,
+                        subTitle: subTitle!,
+                        date: formattedCurrentDate,
                         color: Colors.blue.value);
                     BlocProvider.of<AddNoteCubit>(context).addNote(noteModel);
                   } else {
@@ -67,7 +82,7 @@ class _AddNoteFormState extends State<AddNoteForm> {
             },
           ),
           const SizedBox(
-            height: 15,
+            height: 16,
           ),
         ],
       ),
